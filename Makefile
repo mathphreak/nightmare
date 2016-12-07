@@ -13,8 +13,10 @@ test: node_modules
 #otherwise, run mocha under the xvfb wrapper
 ifeq ($(CIRCLE_PROJECT_REPONAME)$(HEADLESS)$(XVFB_RUNNING), 111)
 	@node_modules/.bin/mocha --grep "$(GREP)"
+	@node_modules/.bin/electron-mocha --grep "$(GREP)"
 else
 	@./test/bb-xvfb node_modules/.bin/mocha --grep "$(GREP)"
+	@./test/bb-xvfb node_modules/.bin/electron-mocha --grep "$(GREP)"
 endif
 
 node_modules: package.json

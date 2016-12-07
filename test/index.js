@@ -1838,7 +1838,7 @@ describe('Nightmare', function () {
     });
 
     it('should allow to use external Electron', function*() {
-      nightmare = Nightmare({ electronPath: require('electron') });
+      nightmare = Nightmare({ electronPath: require('electron-prebuilt-path') });
       nightmare.should.be.ok;
     });
   });
