@@ -68,39 +68,41 @@ describe('Nightmare', function () {
     Nightmare.version.should.be.ok;
     yield nightmare.end();
   });
+  
+  if (!process.versions.electron) {
+    it('should kill its electron process when it is killed', function(done) {
+      var child = child_process.fork(
+        path.join(__dirname, 'files', 'nightmare-unended.js'));
 
-  it('should kill its electron process when it is killed', function(done) {
-    var child = child_process.fork(
-      path.join(__dirname, 'files', 'nightmare-unended.js'));
+      child.once('message', function(electronPid) {
+        child.once('exit', function() {
+          try {
+            electronPid.should.not.be.a.process;
+          }
+          catch(error) {
+            // if the test failed, clean up the still-running process
+            process.kill(electronPid, 'SIGINT');
+            throw error;
+          }
+          done();
+        });
+        child.kill();
+      });
+    });
 
-    child.once('message', function(electronPid) {
-      child.once('exit', function() {
-        try {
+    it('should gracefully handle electron being killed', function(done) {
+      var child = child_process.fork(
+        path.join(__dirname, 'files', 'nightmare-unended.js'));
+
+      child.once('message', function(electronPid) {
+        process.kill(electronPid, 'SIGINT');
+        child.once('exit', function(){
           electronPid.should.not.be.a.process;
-        }
-        catch(error) {
-          // if the test failed, clean up the still-running process
-          process.kill(electronPid, 'SIGINT');
-          throw error;
-        }
-        done();
-      });
-      child.kill();
-    });
-  });
-
-  it('should gracefully handle electron being killed', function(done) {
-    var child = child_process.fork(
-      path.join(__dirname, 'files', 'nightmare-unended.js'));
-
-    child.once('message', function(electronPid) {
-      process.kill(electronPid, 'SIGINT');
-      child.once('exit', function(){
-        electronPid.should.not.be.a.process;
-        done();
+          done();
+        });
       });
     });
-  });
+  }
 
   it('should end gracefully if the chain has not been started', function(done) {
     var child = child_process.fork(
